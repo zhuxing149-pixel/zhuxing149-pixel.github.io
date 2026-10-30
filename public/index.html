@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f7f5f1">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="format-detection" content="telephone=no">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Crect%20width='64'%20height='64'%20rx='14'%20fill='%233f6e8c'/%3E%3Ctext%20x='32'%20y='45'%20font-size='36'%20font-family='sans-serif'%20font-weight='700'%20fill='%23ffffff'%20text-anchor='middle'%3E%E7%A8%8E%3C/text%3E%3C/svg%3E">
+<title>工资个税核算 · 到手工资核对</title>
+<link rel="preload" href="fonts/inter-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/inter-600.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%233F6E8C'/%3E%3Ctext x='16' y='23' font-size='19' text-anchor='middle' fill='%23fff' font-family='serif'%3E税%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+
+<div class="sticky-head">
+<header class="app-bar">
+  <div class="brand">
+    <span class="brand-mark">税</span>
+    <div class="brand-text">
+      <h1>工资个税核算</h1>
+      <p>累计预扣预缴 · 到手工资核对</p>
+    </div>
+  </div>
+  <div class="app-bar-right">
+    <span class="archive-chip" id="archive-chip">— / 24 月</span>
+  </div>
+</header>
+
+<nav class="tabs" role="tablist" aria-label="主导航">
+  <button class="tab is-active" data-view="calc" role="tab">核算</button>
+  <button class="tab" data-view="history" role="tab">明细</button>
+  <button class="tab" data-view="io" role="tab">导入导出</button>
+  <button class="tab" data-view="settings" role="tab">设置</button>
+</nav>
+</div>
+
+<main class="wrap">
+
+  <!-- ══════════════════ 核算 ══════════════════ -->
+  <section id="view-calc" class="view">
+
+    <div class="card month-card">
+      <div class="month-row">
+        <div class="month-pick">
+          <span class="lbl">工资所属月</span>
+          <div class="sel-pair">
+            <span class="sel-cell"><select id="period-year" aria-label="所属年"></select><i class="sel-unit">年</i></span>
+            <span class="sel-cell"><select id="period-month" aria-label="所属月"></select><i class="sel-unit">月</i></span>
+          </div>
+        </div>
+        <span class="month-arrow" aria-hidden="true">›</span>
+        <div class="month-pick">
+          <span class="lbl">工资发放月<span class="hint-inline">计税月序以此为准</span></span>
+          <div class="sel-pair">
+            <span class="sel-cell"><select id="pay-year" aria-label="发放年"></select><i class="sel-unit">年</i></span>
+            <span class="sel-cell"><select id="pay-month" aria-label="发放月"></select><i class="sel-unit">月</i></span>
+          </div>
+        </div>
+      </div>
+      <div class="month-foot">
+        <span class="state-tag" id="edit-state">未存档</span>
+        <div class="spacer"></div>
+        <button class="btn ghost sm" id="btn-prev-month" type="button">上一期</button>
+        <button class="btn ghost sm" id="btn-next-month" type="button">下一期</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 class="sec-title">收入项</h2>
+      <div class="fields" id="grid-income"></div>
+      <div class="sum-row">
+        <span>应发合计</span>
+        <b class="num" id="sum-gross">¥0.00</b>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 class="sec-title">税前扣除</h2>
+      <div class="fields" id="grid-preTax"></div>
+      <div class="sum-row">
+        <span>个人社保 + 个人公积金</span>
+        <b class="num" id="sum-social">¥0.00</b>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 class="sec-title">税后扣除</h2>
+      <div class="fields" id="grid-postTax"></div>
+    </div>
+
+    <div class="card">
+      <button class="fold-toggle" id="toggle-compare" type="button" aria-expanded="false">
+        <span>公司工资条比对<em>选填 · 用于核对是否算错</em></span>
+        <span class="chev" aria-hidden="true"></span>
+      </button>
+      <div class="fold-body" id="body-compare" hidden>
+        <div class="fields" id="grid-compare"></div>
+        <p class="formula">填写工资条上的数字，程序会自动与计算值比对，不一致即标为异常。</p>
+      </div>
+    </div>
+
+    <div class="card result-card">
+      <div class="result-hero">
+        <span class="result-label">本月应预扣预缴个税</span>
+        <div class="result-value num" id="r-tax">¥0.00</div>
+        <span class="result-sub" id="r-tax-sub">—</span>
+      </div>
+      <div class="result-grid">
+        <div class="rcell"><span>到手（实发合计）</span><b class="num" id="r-net">¥0.00</b></div>
+        <div class="rcell"><span>本次发放</span><b class="num" id="r-current">¥0.00</b></div>
+        <div class="rcell"><span>应发合计</span><b class="num" id="r-gross">¥0.00</b></div>
+        <div class="rcell"><span>本月社保公积金</span><b class="num" id="r-social">¥0.00</b></div>
+        <div class="rcell"><span>扣发合计</span><b class="num" id="r-deduct">¥0.00</b></div>
+        <div class="rcell"><span>旧算法参考</span><b class="num" id="r-old">¥0.00</b></div>
+      </div>
+    </div>
+
+    <div id="anomaly-box"></div>
+
+    <details class="card fold">
+      <summary>累计计算明细</summary>
+      <div class="fold-body" id="cum-detail"></div>
+    </details>
+
+    <div class="action-bar">
+      <button class="btn primary" id="btn-save" type="button">保存本月</button>
+      <button class="btn danger-ghost" id="btn-delete-one" type="button">删除</button>
+    </div>
+  </section>
+
+  <!-- ══════════════════ 明细 ══════════════════ -->
+  <section id="view-history" class="view" hidden>
+    <div class="card">
+      <div class="hist-head">
+        <h2 class="sec-title">存档明细</h2>
+        <span class="muted" id="hist-count"></span>
+      </div>
+      <div class="bulk-bar">
+        <label class="check"><input type="checkbox" id="chk-all"><span>全选</span></label>
+        <div class="spacer"></div>
+        <span class="muted" id="sel-count">已选 0 条</span>
+        <button class="btn danger-ghost sm" id="btn-bulk-delete" type="button">批量删除</button>
+      </div>
+      <div id="hist-list" class="hist-list"></div>
+      <div id="hist-empty" class="empty" hidden>
+        <p>还没有存档记录</p>
+        <button class="btn ghost sm" id="btn-goto-calc" type="button">去录入第一个月</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════ 导入导出 ══════════════════ -->
+  <section id="view-io" class="view" hidden>
+    <div class="card">
+      <h2 class="sec-title">导出 Excel</h2>
+      <div class="seg" id="export-scope">
+        <button class="seg-btn is-active" data-scope="month" type="button">按月</button>
+        <button class="seg-btn" data-scope="year" type="button">按年</button>
+        <button class="seg-btn" data-scope="all" type="button">全部</button>
+      </div>
+      <div class="row-line" id="scope-value-row">
+        <label for="export-value">选择月份</label>
+        <select id="export-value"></select>
+      </div>
+      <p class="formula" id="export-hint"></p>
+      <button class="btn primary block" id="btn-export" type="button">导出 Excel</button>
+      <p class="formula">导出文件与导入模板结构完全一致，编辑后可直接导入，无需二次处理。</p>
+      <button class="btn ghost block" id="btn-template" type="button">下载空白导入模板</button>
+    </div>
+
+    <div class="card">
+      <h2 class="sec-title">导入 Excel</h2>
+      <div class="dropzone" id="dropzone">
+        <input type="file" id="file-input" accept=".xlsx,.xlsm,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden>
+        <p class="dz-main">点击选择文件，或把文件拖到这里</p>
+        <p class="dz-sub">支持本程序导出的 .xlsx 模板</p>
+      </div>
+      <div class="seg" id="import-mode">
+        <button class="seg-btn is-active" data-mode="merge" type="button">合并（同月覆盖）</button>
+        <button class="seg-btn" data-mode="replace" type="button">替换年度基数</button>
+      </div>
+      <div id="import-result" hidden></div>
+    </div>
+
+    <div class="card">
+      <h2 class="sec-title">换设备恢复</h2>
+      <ol class="steps">
+        <li>在旧设备「导出 Excel」得到 .xlsx 文件（含全部月份与设置）。</li>
+        <li>把文件传到新设备（微信 / 邮件 / 网盘均可）。</li>
+        <li>在新设备打开本程序，用上面的「导入 Excel」载入即可完整恢复。</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ══════════════════ 设置 ══════════════════ -->
+  <section id="view-settings" class="view" hidden>
+    <div class="card">
+      <h2 class="sec-title">字段沿用上月</h2>
+      <p class="formula">勾选的字段在新建下一期时会自动带出上月的数值，未勾选的字段归零重填。<br>请假时数每月不同，一般不必勾选；标准计薪时数与三项比例通常固定，建议勾选。</p>
+      <div class="carry-list" id="carry-list"></div>
+      <button class="btn ghost sm" id="btn-save-carry" type="button">保存沿用设置</button>
+    </div>
+
+    <div class="card">
+      <h2 class="sec-title">年度累计起算基数</h2>
+      <p class="formula">如果你是年中才开始记录，请填写该年度最早记录<strong>之前</strong>已累计的金额，否则累计税额会算低。从 1 月起记的不用填。</p>
+      <div id="yearbase-list" class="yb-list"></div>
+      <div class="row-line">
+        <input type="text" id="yb-year" inputmode="numeric" placeholder="年度 如 2026" maxlength="4">
+        <button class="btn ghost sm" id="btn-yb-add" type="button">添加年度</button>
+      </div>
+      <button class="btn ghost sm" id="btn-save-yb" type="button">保存起算基数</button>
+    </div>
+
+    <div class="card">
+      <h2 class="sec-title">数据与隐私</h2>
+      <p class="formula">本程序<strong>完全在浏览器本地运行</strong>，不连接任何服务器、不上传任何数据。你的工资信息只保存在你自己这台设备的浏览器里（localStorage）。<br>清除浏览器数据、使用无痕窗口、或更换浏览器时，本地存档会丢失，请及时用「导入导出」里的 Excel 备份。</p>
+    </div>
+
+    <div class="card">
+      <h2 class="sec-title">个人所得税税率表</h2>
+      <details class="fold inline"><summary>新算法 · 累计预扣预缴（现行）</summary>
+        <div class="fold-body" id="tbl-new"></div>
+      </details>
+      <details class="fold inline"><summary>旧算法 · 月度税率表（仅参考）</summary>
+        <div class="fold-body" id="tbl-old"></div>
+      </details>
+    </div>
+
+    <div class="card">
+      <h2 class="sec-title danger-text">危险操作</h2>
+      <p class="formula">清空后所有存档月份将被永久删除，且无法恢复。建议先导出 Excel 备份。</p>
+      <button class="btn danger block" id="btn-reset" type="button">清空全部数据</button>
+    </div>
+
+    <p class="foot-note">本程序按现行累计预扣预缴法测算，仅供参考，实际以税务机关与单位申报为准。数据仅保存在你自己的浏览器内，不上传任何服务器。</p>
+  </section>
+
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<div class="modal-backdrop" id="modal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <h3 id="modal-title">确认</h3>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-actions">
+      <button class="btn ghost" id="modal-cancel" type="button">取消</button>
+      <button class="btn danger" id="modal-ok" type="button">确认删除</button>
+    </div>
+  </div>
+</div>
+
+<script src="vendor/jszip.min.js"></script>
+<script src="vendor/xlsx.full.min.js"></script>
+<script src="shared/tax-core.js"></script>
+<script src="js/excel-browser.js"></script>
+<script src="js/store-local.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

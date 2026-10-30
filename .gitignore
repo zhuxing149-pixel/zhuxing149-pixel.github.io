@@ -1,0 +1,32 @@
+# ---- 依赖 ----
+node_modules/
+
+# ---- 个人数据（绝不上传，工资数据隐私红线） ----
+data/
+*.json.bak
+
+# ---- 本地分发产物 ----
+dist/
+runtime/
+*.zip
+
+# ---- 日志与临时 ----
+*.log
+启动日志.txt
+.DS_Store
+Thumbs.db
+
+# ---- 已放弃的移动端单文件版 ----
+mobile/
+public/m.html
+
+# ---- 后端残留（纯静态版不再使用，本地保留仅供开发预览，绝不上传） ----
+server.js
+lib/
+tools/
+package-lock.json
+*.bat
+
+# ---- 编辑器 ----
+.vscode/
+.idea/
